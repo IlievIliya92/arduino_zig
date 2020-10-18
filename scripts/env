@@ -1,0 +1,3 @@
+#!/bin/bash
+
+export ARDUINO_ZIG_PROJECT_ROOT=$(pwd)

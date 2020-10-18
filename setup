@@ -1,0 +1,9 @@
+#!/bin/bash
+
+source ./scripts/addtopath
+source ./scripts/env
+
+printf "Commands imported:\n\n"
+printf "install_packages - install project dependencies\n"
+printf "build - build the project\n"
+printf "deploy - deploy to the target board\n"

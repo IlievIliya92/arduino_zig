@@ -1,0 +1,16 @@
+#!/bin/bash
+
+usage(){
+  echo "Usage:"
+  echo "deploy <arduino_serial_device>"
+  echo ""
+  exit
+}
+
+if [ -z "$1" ]
+  then
+  usage
+fi
+
+cd ${ARDUINO_ZIG_PROJECT_ROOT}/build
+avrdude -patmega328p -carduino -P$1 -D -Uflash:w:blink.hex:i
