@@ -1,14 +1,14 @@
 #!/bin/bash
 
-zig build-obj --release-small -target avr-freestanding-eabi ${ARDUINO_ZIG_PROJECT_ROOT}/src/blink.zig
+zig build-obj --release-small -target avr-freestanding-eabi ${ARDUINO_ZIG_PROJECT_ROOT}/src/main.zig
 
 if [ ! -d "${ARDUINO_ZIG_PROJECT_ROOT}/build" ]; then
     mkdir build
 fi
 
-mv blink.o ${ARDUINO_ZIG_PROJECT_ROOT}/build
+mv main.o ${ARDUINO_ZIG_PROJECT_ROOT}/build
 cd ${ARDUINO_ZIG_PROJECT_ROOT}/build
-avr-ld -o blink.elf blink.o
-avr-objcopy -j .text -j .data -O ihex blink.elf blink.hex
+avr-ld -o main.elf main.o
+avr-objcopy -j .text -j .data -O ihex main.elf main.hex
 
 cd -

@@ -13,4 +13,4 @@ if [ -z "$1" ]
 fi
 
 cd ${ARDUINO_ZIG_PROJECT_ROOT}/build
-avrdude -patmega328p -carduino -P$1 -D -Uflash:w:blink.hex:i
+avrdude -patmega328p -carduino -P$1 -D -Uflash:w:main.hex:i
