@@ -1,4 +1,5 @@
 // --- Util functions  ---
+const avr = @import("atmega328p.zig");
 
 // --- delay ---
 // args:
@@ -12,11 +13,7 @@ pub fn delay(ms: u16) void {
     while (count < ms) : (count += 1) {
         var loop: u16 = 0;
         while (loop < loop_ms) : (loop += 1) {
-            asm volatile (""
-                :
-                :
-                : "memory"
-            );
+                avr.BARRIER();
         }
     }
 }
@@ -29,7 +26,7 @@ pub fn delay(ms: u16) void {
 // value (u1) - value of the bit to set (1/0)
 // return value:
 // void
-pub fn setbit(reg: *volatile u8, comptime bit: u8, value: u1) void {
+pub fn setbit(reg: *volatile u8, comptime bit: u3, value: u1) void {
     const mask: u8 = 1 << bit;
 
     if (1 == value) {
@@ -50,7 +47,7 @@ pub fn setbit(reg: *volatile u8, comptime bit: u8, value: u1) void {
 // Example usage of getbit
 //var ret: u1 = 0;
 //ret = utils.getbit(@ptrToInt(avr.portb), 5);
-pub fn getbit(reg: u8, comptime bit: u8) u1 {
+pub fn getbit(reg: u8, comptime bit: u3) u1 {
     const mask: u8 = 1 << bit;
 
     return @intCast(u1, reg & mask);
@@ -63,7 +60,7 @@ pub fn getbit(reg: u8, comptime bit: u8) u1 {
 // bit (u8) - bit in the register to toggle (change from 0 to 1 and viceversa)
 // return value:
 // void
-pub fn toggle(reg: *volatile u8, comptime bit: u8) void {
+pub fn toggle(reg: *volatile u8, comptime bit: u3) void {
     const mask: u8 = 1 << bit;
 
     reg.* ^= mask;

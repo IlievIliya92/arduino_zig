@@ -22,7 +22,7 @@ const DataDirection = enum(u1) {
 // The DDxn bit in the DDRx register selects the direction of this pin.
 // If DDxn is written logic one, Pxn is configured as an output pin.
 // If DDxn is written logic zero, Pxn is configured as an input pin.
-fn setDDR(port: *volatile u8, comptime bit: u8, direction: DataDirection)  void {
+fn setDDR(port: *volatile u8, comptime bit: u3, direction: DataDirection)  void {
     utils.setbit(port, bit, @enumToInt(direction));
 }
 
@@ -38,6 +38,6 @@ pub fn heartBeat(ms: u16) void {
 }
 
 pub fn init() void {
-    // Set PORTB 5 to be output
-    setDDR(avr.ddrb, 5, DataDirection.out);
+    // Set PORTB B5 to be output
+    setDDR(avr.ddrb, @enumToInt(avr.PORTB.B5), DataDirection.out);
 }
