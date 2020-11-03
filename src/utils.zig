@@ -18,6 +18,10 @@ pub fn delay(ms: u16) void {
     }
 }
 
+pub fn bitMask(comptime b: u3) comptime u8 {
+    return (1 << b);
+}
+
 // --- setbit ---
 // Set bit (bit) of a register (reg) to a value (value: 0/1)
 // args:
@@ -27,7 +31,7 @@ pub fn delay(ms: u16) void {
 // return value:
 // void
 pub fn setbit(reg: *volatile u8, comptime bit: u3, value: u1) void {
-    const mask: u8 = 1 << bit;
+    const mask: u8 = bitMask(bit);
 
     if (1 == value) {
         reg.* |= mask;
@@ -48,7 +52,7 @@ pub fn setbit(reg: *volatile u8, comptime bit: u3, value: u1) void {
 //var ret: u1 = 0;
 //ret = utils.getbit(@ptrToInt(avr.portb), 5);
 pub fn getbit(reg: u8, comptime bit: u3) u1 {
-    const mask: u8 = 1 << bit;
+    const mask: u8 = bitMask(bit);
 
     return @intCast(u1, reg & mask);
 }
@@ -61,7 +65,8 @@ pub fn getbit(reg: u8, comptime bit: u3) u1 {
 // return value:
 // void
 pub fn toggle(reg: *volatile u8, comptime bit: u3) void {
-    const mask: u8 = 1 << bit;
+    const mask: u8 = bitMask(bit);
 
     reg.* ^= mask;
 }
+
