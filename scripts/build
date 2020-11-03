@@ -1,6 +1,7 @@
 #!/bin/bash
 
-zig build-obj --release-small -target avr-freestanding-eabi ${ARDUINO_ZIG_PROJECT_ROOT}/src/main.zig
+zig build-obj --strip --release-small -target avr-freestanding-none -mcpu=atmega328p ${ARDUINO_ZIG_PROJECT_ROOT}/src/main.zig
+#zig build-obj -femit-asm -fno-emit-bin --strip --release-small -target avr-freestanding-none -mcpu=atmega328p ${ARDUINO_ZIG_PROJECT_ROOT}/src/main.zig
 
 if [ ! -d "${ARDUINO_ZIG_PROJECT_ROOT}/build" ]; then
     mkdir build
