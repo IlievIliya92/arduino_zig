@@ -15,8 +15,8 @@ const DataDirection = enum(u1) {
 // --- set DDR (Data Direction Register) ---
 // args:
 // port (u8) - port to modify
-// bit (u8) - bit to set as in/output
-// bit (u8) - bit to set as in/output
+// bit (u3) - bit to set as in/output
+// direction (DataDirection) - bit to set as in/output
 // return value:
 // void
 // The DDxn bit in the DDRx register selects the direction of this pin.
