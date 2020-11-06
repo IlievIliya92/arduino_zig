@@ -3,7 +3,7 @@ const utils = @import("utils.zig");
 const avr = @import("atmega328p.zig");
 
 // --- COMM INTERFACES ---
-pub const eCOMPort = enum(u3) {
+pub const eCOMPort = enum(u8) {
     USART0,
     MSPIM0,
     USART1,
@@ -42,51 +42,70 @@ pub const BAUD_RATE_U2Xn = enum(u16) {
     BPS_230400 = 8, // 230.4k bps
 };
 
-pub fn init(port: eCOMPort, baudRate: BAUD_RATE_U2Xn) void {
+pub const Uart = struct {
+    const Self = @This();
 
-    avr.ENTER_CRITICAL();
+    pub fn new(port: eCOMPort, baudRate: BAUD_RATE_U2Xn) Self {
+        Self.init(port, baudRate);
 
-    switch (port) {
-        .USART0 => {
-            // As the 16MHz Arduino boards have bad karma for serial port, we're using the 2x clock U2X0 */
-            // for Arduino at 16MHz;
-            // This provides correct rounding truncation to get closest to correct speed.
-            // Normal mode gives 3.7% error, which is too much. Use 2x mode gives 2.1% error.
-            // for 2x mode, using 16 bit avr-gcc capability.
-            avr.ubrr0h.* = @intCast(u8, @shrExact(@enumToInt(baudRate), 8));
-            avr.ubrr0l.* = @intCast(u8, (@enumToInt(baudRate)));
-
-            // Enable 2x mode
-            utils.setbit(avr.ucsr0a, @enumToInt(avr.UCSR0A.U2X0), 1);
-
-            // Enable the Rx and Tx. Also enable the Rx interrupt. The Tx interrupt will get enabled later. */
-            avr.ucsr0b.* = utils.bitMask(@enumToInt(avr.UCSR0B.RXCIE0)) |
-                           utils.bitMask(@enumToInt(avr.UCSR0B.RXEN0)) |
-                           utils.bitMask(@enumToInt(avr.UCSR0B.TXEN0));
-
-            // Set the data bit register to 8n2. Two Stop Bits only affects transmitter.*/
-            avr.ucsr0c.* = utils.bitMask(@enumToInt(avr.UCSR0C.USBS0)) |
-                          utils.bitMask(@enumToInt(avr.UCSR0C.UCSZ01)) |
-                          utils.bitMask(@enumToInt(avr.UCSR0C.UCSZ00));
-        },
-        else => {},
+        return Self {};
     }
 
-    avr.EXIT_CRITICAL();
-}
+    fn init(port: eCOMPort, baudRate: BAUD_RATE_U2Xn) void {
+        avr.ENTER_CRITICAL();
+        switch (port) {
+            .USART0 => {
+                // As the 16MHz Arduino boards have bad karma for serial port, we're using the 2x clock U2X0 */
+                // for Arduino at 16MHz;
+                // This provides correct rounding truncation to get closest to correct speed.
+                // Normal mode gives 3.7% error, which is too much. Use 2x mode gives 2.1% error.
+                // for 2x mode, using 16 bit avr-gcc capability.
+                avr.ubrr0h.* = @intCast(u8, @shrExact(@enumToInt(baudRate), 8));
+                avr.ubrr0l.* = @intCast(u8, (@enumToInt(baudRate)));
 
-pub fn sendChar(char: u8) void {
-    // Wait for empty transmit buffer
-    // When UDRE0 = 0,data transmisson ongoing.
-    //So NOT{[UCSR0A & (1<<UDRE0)] = 0} = 1 ,While(1) loop stays there
-    //When UDRE0 = 1,data transmisson completed.
-    //So NOT{[UCSR0A & (1<<UDRE0)] = 1} = 0 ,While(0) loop fails
-    while (utils.getbit(@ptrToInt(avr.ucsr0a), @enumToInt(avr.UCSR0A.UDRE0)) == 1)
-    {
-        utils.delay(1);
+                // Enable 2x mode
+                utils.setbit(avr.ucsr0a, @enumToInt(avr.UCSR0A.U2X0), 1);
+
+                // Enable the Rx and Tx. Also enable the Rx interrupt. The Tx interrupt will get enabled later. */
+                avr.ucsr0b.* = utils.bitMask(@enumToInt(avr.UCSR0B.RXCIE0)) |
+                               utils.bitMask(@enumToInt(avr.UCSR0B.RXEN0)) |
+                               utils.bitMask(@enumToInt(avr.UCSR0B.TXEN0));
+
+                // Set the data bit register to 8n2. Two Stop Bits only affects transmitter.*/
+                avr.ucsr0c.* = utils.bitMask(@enumToInt(avr.UCSR0C.USBS0)) |
+                               utils.bitMask(@enumToInt(avr.UCSR0C.UCSZ01)) |
+                               utils.bitMask(@enumToInt(avr.UCSR0C.UCSZ00));
+
+                avr.ucsr0c.* = 0x06;
+            },
+            else => {},
+        }
+        avr.EXIT_CRITICAL();
     }
 
-    avr.udr0.* = char;
-}
+    fn put_char(char: u8) void {
+        //avr.udr0.*  = 0x00;
 
+        // If UDREn is one, the buffer is empty,
+        // and therefore ready to be written. The UDREn flag can generate a
+        // data register empty interrupt.
+        // UDREn is set after a reset to indicate that the transmitter is ready.
+        while ( utils.getbit(avr.ucsr0a, @enumToInt(avr.UCSR0A.UDRE0)) == 0)
+        {
+            avr.NOP();
+        }
 
+        avr.udr0.* = char;
+    }
+
+    pub fn put_string(self: Self, string: []const u8) usize {
+        for (string) |value| {
+            Self.put_char(value);
+        }
+
+        Self.put_char('\r');
+        Self.put_char('\n');
+
+        return string.len;
+    }
+};

@@ -8,7 +8,7 @@ pub const CPU_CLOCK_HZ = 16000000;
 
 
 // --- Register Mapping
-pub const PORTB = enum(u3) {
+pub const PORTB = enum(u8) {
     B0,
     B1,
     B2,
@@ -24,7 +24,7 @@ pub const portb = @intToPtr(*volatile u8, 0x25);
 
 
 // --- Serial Communication
-pub const UCSR0A = enum(u3) {
+pub const UCSR0A = enum(u8) {
     MPCM0,
     U2X0,
     UPE0,
@@ -36,7 +36,7 @@ pub const UCSR0A = enum(u3) {
 };
 pub const ucsr0a = @intToPtr(*volatile u8, 0xC0);
 
-pub const UCSR0B = enum(u3) {
+pub const UCSR0B = enum(u8) {
     TXB8,
     RXB80,
     UCSZ02,
@@ -48,7 +48,7 @@ pub const UCSR0B = enum(u3) {
 };
 pub const ucsr0b = @intToPtr(*volatile u8, 0xC1);
 
-pub const UCSR0C = enum(u3) {
+pub const UCSR0C = enum(u8) {
     UCPOL0,
     UCSZ00,
     UCSZ01,
